@@ -1,3 +1,26 @@
+class Dwt2d(nn.Module):
+    def __init__(self):
+        super(Dwt2d, self).__init__()
+        self.requires_grad = False
+
+    def dwt(self, x):
+        with torch.no_grad():
+            x = x.cpu()    ##
+            # LL, (LH, HL, HH) = pywt.dwt2(x, 'haar')
+            LL, (LH, HL, HH) = pywt.dwt2(x, 'haar')
+
+            LL = torch.tensor(LL).cuda()
+            LH = torch.tensor(LH).cuda()
+            HL = torch.tensor(HL).cuda()
+            HH = torch.tensor(HH).cuda()
+
+        return torch.cat((LL, LH, HL, HH), 1)
+
+    def forward(self, x):
+        out = self.dwt(x)
+        return out
+        
+
 class MRDAB(nn.Module):
     r""" Multi-scale Receptive-field Downsampling Attention Block """
     def __init__(self, dim, ratio=4, scale=8):
@@ -43,7 +66,7 @@ class MRDAB(nn.Module):
             B, C, H, W = list(x.size())
             qkv0 = self.dwt(self.reduce(x))
 
-            # Multi-scale Receptive-field
+            # Multi-scale Receptive field
             qkv1 = self.conv1(qkv0)
             qkv2 = self.conv2(qkv0)
             qkv3 = self.conv3(qkv0)
