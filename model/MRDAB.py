@@ -1,4 +1,5 @@
 class MRDAB(nn.Module):
+    r""" Multi-scale Receptive-field Downsampling Attention Block """
     def __init__(self, dim, ratio=4, scale=8):
         super(MRDAB, self).__init__()
         self.ratio = ratio
@@ -42,7 +43,7 @@ class MRDAB(nn.Module):
             B, C, H, W = list(x.size())
             qkv0 = self.dwt(self.reduce(x))
 
-            # 多尺度感受野
+            # Multi-scale Receptive-field
             qkv1 = self.conv1(qkv0)
             qkv2 = self.conv2(qkv0)
             qkv3 = self.conv3(qkv0)
