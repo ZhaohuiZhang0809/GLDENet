@@ -1,0 +1,38 @@
+class LRRCB(nn.Module):
+    def __init__(self, ch_in, ch_out, res=True):
+        super(LRRCB, self).__init__()
+
+        self.large_conv = nn.Sequential(
+            nn.Conv2d(ch_in, ch_out, kernel_size=7, stride=1, padding=3, dilation=1),
+            nn.BatchNorm2d(ch_out),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(ch_out, ch_out, kernel_size=7, stride=1, padding=3, dilation=1),
+            nn.BatchNorm2d(ch_out),
+            nn.ReLU(inplace=True)
+        )
+
+        self.small_conv = nn.Sequential(
+            nn.Conv2d(ch_out, ch_out, kernel_size=3, stride=1, padding=1, dilation=1),
+            nn.BatchNorm2d(ch_out),
+            nn.ReLU(inplace=True)
+        )
+
+        self.res = res
+
+        self.downsample = nn.Sequential()
+        if ch_in != ch_out:
+            # shortcut
+            self.downsample = nn.Sequential(
+                nn.Conv2d(ch_in, ch_out, kernel_size=1, stride=1, bias=False),
+                nn.BatchNorm2d(ch_out),
+                nn.ReLU(inplace=True)
+            )
+
+    def forward(self, x):
+        identity = x
+        x = self.large_conv(x)
+
+        if self.res == True:
+            x = x + self.downsample(identity)
+
+        return x
